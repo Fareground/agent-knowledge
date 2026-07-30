@@ -81,7 +81,7 @@ Install from source (there is no published package yet):
 ```bash
 git clone https://github.com/Fareground/agent-knowledge.git
 cd agent-knowledge
-pip install -e ".[dev]"
+pip install "fg-agent-id @ git+https://github.com/Fareground/agent-id.git" -e ".[dev]"
 ```
 
 The only runtime dependency is `fg-agent-id`; `sqlite3` is stdlib.
