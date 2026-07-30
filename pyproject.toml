@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fg-agent-knowledge"
+version = "0.2.0"
+description = "Shared knowledge for multi-agent spaces: signed claims with pedigree, confidence/staleness, governed promotion, assembled briefings."
+readme = "README.md"
+requires-python = ">=3.11"
+keywords = ["ai", "agents", "knowledge", "memory", "multi-agent", "provenance", "ed25519"]
+license = { text = "Apache-2.0" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "fg-agent-id>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fg_agent_knowledge"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
