@@ -13,6 +13,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Fareground/agent-knowledge/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Fareground/agent-knowledge/ci.yml?branch=main&style=flat-square&label=CI" /></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11+-3b82f6?style=flat-square" />
   <img alt="Status" src="https://img.shields.io/badge/status-alpha-f59e0b?style=flat-square" />
 </p>
@@ -153,13 +154,11 @@ spec/
   generate_vectors.py                       Regenerate vectors
 tests/                                      105 tests (unit + e2e + vectors)
 examples/                                   Consumer sketches (e.g. consolidator)
-DESIGN.md                                   Design rationale
 ```
 
 ## Design
 
-The design rationale and data model live in
-[`DESIGN.md`](DESIGN.md). The normative wire format lives in
+The normative wire format and data model live in
 [`spec/SPEC.md`](spec/SPEC.md); byte-stable golden vectors in
 [`spec/vectors.json`](spec/vectors.json) (regenerate with
 `python spec/generate_vectors.py`).

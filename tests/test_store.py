@@ -88,8 +88,8 @@ def test_both_stores_rank_identically(agent_a, agent_b, tmp_path):
     orders = []
     for s in stores:
         kb = KnowledgeBase(s)
-        a = kb.propose(scope, agent_a, "semantic", "the queue drains slowly at noon",
-                       topics=("queue",), asserted_at=T0)
+        kb.propose(scope, agent_a, "semantic", "the queue drains slowly at noon",
+                   topics=("queue",), asserted_at=T0)
         b = kb.propose(scope, agent_a, "semantic", "the queue is redis backed",
                        topics=("queue", "redis"), asserted_at=T0)
         kb.endorse(b.claim.claim_id, agent_b, "corroborate")

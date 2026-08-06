@@ -14,7 +14,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from fg_agent_id import KeyPair
 
-from fg_agent_knowledge import ArtifactRef, Policy, Scope
+from fg_agent_knowledge import Policy, Scope
 from fg_agent_knowledge.errors import PolicyError, ValidationError
 from fg_agent_knowledge.types import MAX_TEXT_BYTES
 

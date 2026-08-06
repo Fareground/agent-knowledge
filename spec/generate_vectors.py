@@ -16,8 +16,8 @@ from pathlib import Path
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
-
 from fg_agent_id import KeyPair, address_from_signing_key
+
 from fg_agent_knowledge import (
     CONTEXT_CLAIM,
     CONTEXT_ENDORSEMENT,

@@ -248,4 +248,4 @@ portable; storage and relevance are local concerns.
 No consolidation engine, no transport, no federation, and no *built-in*
 embeddings — the core ships only the reference BM25 retriever. Semantic/vector
 search is explicitly supported, but as a consumer-supplied `Retriever` behind
-the §9 seam, not baked into the model-free core. See DESIGN.md.
+the §9 seam, not baked into the model-free core.

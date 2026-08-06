@@ -14,7 +14,12 @@ from datetime import UTC, datetime
 from fg_agent_id import KeyPair, address_from_signing_key
 
 from .errors import PolicyError
-from .signing import CONTEXT_RETIREMENT, CONTEXT_VERDICT, sign_payload, verify_by_address
+from .signing import (
+    CONTEXT_RETIREMENT,
+    CONTEXT_VERDICT,
+    sign_payload,
+    verify_by_address,
+)
 from .types import (
     Claim,
     Policy,

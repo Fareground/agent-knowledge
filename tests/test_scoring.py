@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from fg_agent_id import KeyPair
-
 from fg_agent_knowledge import Scope, build_claim, build_endorsement, confidence
 from fg_agent_knowledge.scoring import (
     DEFAULT_STALENESS_HORIZON_SECONDS,

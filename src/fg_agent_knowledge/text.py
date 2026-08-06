@@ -10,11 +10,7 @@ from __future__ import annotations
 
 # A small, high-value English stoplist. Kept short on purpose: over-aggressive
 # stoplists hurt short technical statements more than they help.
-STOPWORDS = frozenset("""
-a an and are as at be but by for from has have how i in into is it its of on
-or that the their then there these they this to was were what when which who
-will with you your
-""".split())
+STOPWORDS = frozenset(["a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "from", "has", "have", "how", "i", "in", "into", "is", "it", "its", "of", "on", "or", "that", "the", "their", "then", "there", "these", "they", "this", "to", "was", "were", "what", "when", "which", "who", "will", "with", "you", "your"])
 
 
 def tokenize(text: str) -> list[str]:
@@ -94,9 +90,7 @@ def stem_word(word: str) -> str:
     w = word
 
     # Step 1a — plurals.
-    if w.endswith("sses"):
-        w = w[:-2]
-    elif w.endswith("ies"):
+    if w.endswith(("sses", "ies")):
         w = w[:-2]
     elif w.endswith("ss"):
         pass

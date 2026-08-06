@@ -10,8 +10,13 @@ import pytest
 from fg_agent_id import KeyPair
 
 from fg_agent_knowledge import (
-    InMemoryStore, KeywordRetriever, KnowledgeBase, Ranking, RetrievalQuery,
-    Scope, build_claim,
+    InMemoryStore,
+    KeywordRetriever,
+    KnowledgeBase,
+    Ranking,
+    RetrievalQuery,
+    Scope,
+    build_claim,
 )
 
 SCOPE = Scope(space="ws-retrieval")

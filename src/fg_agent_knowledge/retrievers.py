@@ -15,8 +15,9 @@ from __future__ import annotations
 
 import math
 from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Protocol, Sequence, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from .text import analyze
 from .types import Claim
@@ -56,7 +57,7 @@ class BaseRetriever:
     """Convenience base: no-op write hooks so stateless retrievers only
     implement ``rank``."""
 
-    def index(self, claim: Claim) -> None:  # noqa: D401 - see class docstring
+    def index(self, claim: Claim) -> None:
         return None
 
     def remove(self, claim_id: str) -> None:
