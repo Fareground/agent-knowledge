@@ -114,7 +114,7 @@ class SQLiteStore:
     :class:`~fg_agent_knowledge.retrievers.Retriever`'s job, not the store's."""
 
     def __init__(self, path: str) -> None:
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._db = sqlite3.connect(path, check_same_thread=False)
         self._db.execute("PRAGMA journal_mode=WAL")
         self._db.executescript(_SCHEMA)
@@ -132,9 +132,10 @@ class SQLiteStore:
             self._db.commit()
 
     def episode(self, episode_id: str) -> Episode | None:
-        row = self._db.execute(
-            "SELECT id, space, segment, observer, kind, content, refs, occurred_at "
-            "FROM episodes WHERE id=?", (episode_id,)).fetchone()
+        with self._lock:
+            row = self._db.execute(
+                "SELECT id, space, segment, observer, kind, content, refs, occurred_at "
+                "FROM episodes WHERE id=?", (episode_id,)).fetchone()
         if row is None:
             return None
         return Episode(
@@ -151,13 +152,15 @@ class SQLiteStore:
             self._db.commit()
 
     def claim(self, claim_id: str) -> Claim | None:
-        row = self._db.execute(
-            "SELECT record FROM claims WHERE claim_id=?", (claim_id,)).fetchone()
+        with self._lock:
+            row = self._db.execute(
+                "SELECT record FROM claims WHERE claim_id=?", (claim_id,)).fetchone()
         return claim_from_json(row[0]) if row else None
 
     def claims(self, space: str) -> list[Claim]:
-        rows = self._db.execute(
-            "SELECT record FROM claims WHERE space=?", (space,)).fetchall()
+        with self._lock:
+            rows = self._db.execute(
+                "SELECT record FROM claims WHERE space=?", (space,)).fetchall()
         return [claim_from_json(r[0]) for r in rows]
 
     def add_endorsement(self, endorsement: Endorsement) -> None:
@@ -168,9 +171,10 @@ class SQLiteStore:
             self._db.commit()
 
     def endorsements(self, claim_id: str) -> list[Endorsement]:
-        rows = self._db.execute(
-            "SELECT record FROM endorsements WHERE claim_id=? ORDER BY rowid_ord",
-            (claim_id,)).fetchall()
+        with self._lock:
+            rows = self._db.execute(
+                "SELECT record FROM endorsements WHERE claim_id=? ORDER BY rowid_ord",
+                (claim_id,)).fetchall()
         return [endorsement_from_json(r[0]) for r in rows]
 
     def endorsements_for(
@@ -186,11 +190,12 @@ class SQLiteStore:
         for start in range(0, len(ids), chunk):
             batch = ids[start:start + chunk]
             placeholders = ",".join("?" for _ in batch)
-            rows = self._db.execute(
-                f"SELECT claim_id, record FROM endorsements"
-                f" WHERE claim_id IN ({placeholders}) ORDER BY rowid_ord",
-                batch,
-            ).fetchall()
+            with self._lock:
+                rows = self._db.execute(
+                    f"SELECT claim_id, record FROM endorsements"
+                    f" WHERE claim_id IN ({placeholders}) ORDER BY rowid_ord",
+                    batch,
+                ).fetchall()
             for claim_id, record in rows:
                 result[claim_id].append(endorsement_from_json(record))
         return result
@@ -215,10 +220,11 @@ class SQLiteStore:
             decided_at=parse_datetime("decided_at", row[6]) if row[6] else None)
 
     def promotion(self, promotion_id: str) -> Promotion | None:
-        row = self._db.execute(
-            "SELECT id, space, claim_id, proposer, status, created_at, decided_at "
-            "FROM promotions WHERE id=?", (promotion_id,)).fetchone()
-        return self._promotion_from_row(row) if row else None
+        with self._lock:
+            row = self._db.execute(
+                "SELECT id, space, claim_id, proposer, status, created_at, decided_at "
+                "FROM promotions WHERE id=?", (promotion_id,)).fetchone()
+            return self._promotion_from_row(row) if row else None
 
     def promotions(self, space: str, status: PromotionStatus | None = None) -> list[Promotion]:
         sql = ("SELECT id, space, claim_id, proposer, status, created_at, decided_at "
@@ -226,7 +232,9 @@ class SQLiteStore:
         args: tuple = (space,)
         if status is not None:
             sql, args = sql + " AND status=?", (space, status)
-        return [self._promotion_from_row(r) for r in self._db.execute(sql, args)]
+        with self._lock:
+            rows = self._db.execute(sql, args).fetchall()
+            return [self._promotion_from_row(r) for r in rows]
 
     def decide_promotion(self, promotion_id: str, status: PromotionStatus,
                          decided_at: datetime) -> None:
@@ -253,9 +261,11 @@ class SQLiteStore:
             return True
 
     def verdicts(self, promotion_id: str) -> list[ReviewVerdict]:
-        rows = self._db.execute(
-            "SELECT promotion_id, verdict, basis, author, issued_at, signature "
-            "FROM verdicts WHERE promotion_id=? ORDER BY rowid_ord", (promotion_id,))
+        with self._lock:
+            rows = self._db.execute(
+                "SELECT promotion_id, verdict, basis, author, issued_at, signature "
+                "FROM verdicts WHERE promotion_id=? ORDER BY rowid_ord",
+                (promotion_id,)).fetchall()
         return [ReviewVerdict(
             body=ReviewVerdictBody(
                 promotion_id=r[0], verdict=r[1], basis=r[2], author=r[3],
@@ -272,9 +282,10 @@ class SQLiteStore:
             self._db.commit()
 
     def retirement(self, claim_id: str) -> Retirement | None:
-        row = self._db.execute(
-            "SELECT claim_id, reason, author, issued_at, signature "
-            "FROM retirements WHERE claim_id=?", (claim_id,)).fetchone()
+        with self._lock:
+            row = self._db.execute(
+                "SELECT claim_id, reason, author, issued_at, signature "
+                "FROM retirements WHERE claim_id=?", (claim_id,)).fetchone()
         if row is None:
             return None
         return Retirement(
@@ -289,9 +300,10 @@ class SQLiteStore:
             self._db.commit()
 
     def invalidations(self, space: str) -> dict[str, datetime]:
-        rows = self._db.execute(
-            "SELECT uri, MAX(changed_at) FROM invalidations WHERE space=? GROUP BY uri",
-            (space,))
+        with self._lock:
+            rows = self._db.execute(
+                "SELECT uri, MAX(changed_at) FROM invalidations WHERE space=? GROUP BY uri",
+                (space,)).fetchall()
         return {r[0]: parse_datetime("changed_at", r[1]) for r in rows}
 
     def set_policy(self, scope: Scope, policy: Policy) -> None:
@@ -306,9 +318,10 @@ class SQLiteStore:
             self._db.commit()
 
     def policy(self, scope: Scope) -> Policy | None:
-        row = self._db.execute(
-            "SELECT record FROM policies WHERE space=? AND segment=?",
-            (scope.space, scope.segment or "")).fetchone()
+        with self._lock:
+            row = self._db.execute(
+                "SELECT record FROM policies WHERE space=? AND segment=?",
+                (scope.space, scope.segment or "")).fetchone()
         if row is None:
             return None
         d = json.loads(row[0])
