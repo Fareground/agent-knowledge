@@ -5,6 +5,13 @@ the standards stack: fg-agent-id (who) → fg-amp (how they talk) →
 fg-agent-knowledge (what a group knows).
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("fg-agent-knowledge")
+except PackageNotFoundError:  # running from an uninstalled source tree
+    __version__ = "0.0.0+unknown"
+
 from .claim import build_claim, claim_id_of, verify_claim
 from .endorsement import build_endorsement, verify_endorsement
 from .errors import (

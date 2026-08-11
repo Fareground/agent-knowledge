@@ -117,8 +117,10 @@ class KnowledgeBase:
     ) -> Promotion:
         """Sign a claim and propose it into ``scope`` under the scope's
         policy. Proposing an identical body again is idempotent — same
-        claim_id, same promotion. ``keys`` may be omitted when the handle
-        carries a ``default_author``."""
+        claim_id, same promotion. ``topics=()`` is accepted: the claim is then
+        ranked on its statement terms alone and forgoes the retriever's
+        topic-term weighting in briefings. ``keys`` may be omitted when the
+        handle carries a ``default_author``."""
         keys = self._author(keys)
         kind = _require("kind", kind)
         statement = _require("statement", statement)
@@ -205,6 +207,9 @@ class KnowledgeBase:
     ) -> Endorsement:
         """Corroborate or contradict a claim. A contradiction attaches to the
         claim and lowers derived confidence — it never edits anything.
+        Unlike review, self-endorsement (including self-corroboration) is
+        permitted by design: SPEC §7.1 pushes Sybil-resistance to the
+        consumer, and derived confidence is advisory, not a governance gate.
         ``keys`` may be omitted when the handle carries a ``default_author``."""
         keys = self._author(keys)
         verdict = _require("verdict", verdict)

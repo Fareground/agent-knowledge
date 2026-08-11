@@ -23,6 +23,7 @@ First PyPI release; packaging, documentation, and one additive ergonomic API
   (passphrase-sealed keyfiles), and a "Supported API" section tiering the
   facade surface vs the low-level wire primitives.
 - `SECURITY.md` with a private reporting channel.
+- `fg_agent_knowledge.__version__` (from installed package metadata).
 
 ## 0.2.0 — 2026-07-20
 

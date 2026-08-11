@@ -122,6 +122,23 @@ Every verb also takes explicit keys as its second argument
 wins over the handle's `default_author`, and governance guards (self-review,
 author-only retire) compare identities at call time either way.
 
+The signature moves — endorsement stances and provenance-linked invalidation:
+
+```python
+from datetime import datetime, timezone
+from fg_agent_knowledge import ArtifactRef
+
+claim_id = promo.claim.claim_id
+analyst.endorse(claim_id, verdict="corroborate", basis="held on today's deploy")
+scout.endorse(claim_id, verdict="contradict", basis="cold-cache failure recurred")
+
+# the deploy script changed — every claim ref'ing it goes suspect
+scout.invalidate(scope, "repo://pricing/deploy.sh", datetime.now(timezone.utc))
+```
+
+(`invalidate` matches claims by their `refs=(ArtifactRef(uri=…),)`; suspect
+claims surface as `verify_first` in briefings until re-corroborated.)
+
 > The import package is `fg_agent_knowledge` and the signing domain is
 > `fg-agent-knowledge/v1` — those are load-bearing protocol identifiers and are
 > intentionally left unchanged by the repository rename.
