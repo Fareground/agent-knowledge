@@ -10,7 +10,7 @@ Run:  python examples/quickstart.py
 from __future__ import annotations
 
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fg_agent_id import KeyPair
@@ -49,7 +49,7 @@ def main(db_path: str | None = None) -> None:
     analyst.endorse(claim_id, verdict="corroborate", basis="held on today's deploy")
     scout.endorse(claim_id, verdict="contradict", basis="cold-cache failure recurred")
     suspect = scout.invalidate(
-        scope, "repo://pricing/deploy.sh", datetime.now(timezone.utc)
+        scope, "repo://pricing/deploy.sh", datetime.now(UTC)
     )
     assert claim_id in suspect
 

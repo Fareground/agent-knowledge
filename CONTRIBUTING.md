@@ -39,10 +39,13 @@ A vectors diff is a wire-format change — call it out explicitly in your PR.
 - Prefer immutable, frozen dataclasses for records; return new objects rather
   than mutating in place.
 - Many small, focused files over few large ones.
-- `ruff` is used for linting:
+- `ruff` is the linter, pinned in the `dev` extra so local and CI agree. It
+  installs with `pip install -e ".[dev]"` — if lint passes locally but fails
+  in CI, your venv is missing or drifting from the pinned version; re-run the
+  dev install. Run the exact CI command before pushing:
 
   ```bash
-  ruff check src tests
+  ruff check .
   ```
 
 ## Commits

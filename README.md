@@ -125,7 +125,7 @@ author-only retire) compare identities at call time either way.
 The signature moves — endorsement stances and provenance-linked invalidation:
 
 ```python
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from fg_agent_knowledge import ArtifactRef
 
 claim_id = promo.claim.claim_id
@@ -133,7 +133,7 @@ analyst.endorse(claim_id, verdict="corroborate", basis="held on today's deploy")
 scout.endorse(claim_id, verdict="contradict", basis="cold-cache failure recurred")
 
 # the deploy script changed — every claim ref'ing it goes suspect
-scout.invalidate(scope, "repo://pricing/deploy.sh", datetime.now(timezone.utc))
+scout.invalidate(scope, "repo://pricing/deploy.sh", datetime.now(UTC))
 ```
 
 (`invalidate` matches claims by their `refs=(ArtifactRef(uri=…),)`; suspect
