@@ -15,6 +15,15 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
+The editable install resolves the `fg-agent-id` dependency from PyPI. If you
+are working before/without a PyPI release of `fg-agent-id` (or want its
+unreleased tip), install it from GitHub first:
+
+```bash
+pip install "fg-agent-id @ git+https://github.com/Fareground/agent-id.git"
+pip install -e ".[dev]"
+```
+
 ## Tests
 
 ```bash

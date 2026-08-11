@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fg-agent-knowledge"
-version = "0.2.0"
+version = "0.2.1"
 description = "Shared knowledge for multi-agent spaces: signed claims with pedigree, confidence/staleness, governed promotion, assembled briefings."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -20,7 +20,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "fg-agent-id>=0.1.0",
+    "fg-agent-id>=0.2,<0.3",
 ]
 
 [project.optional-dependencies]

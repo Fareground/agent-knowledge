@@ -39,13 +39,12 @@ knows) → [`agent-framework`](https://github.com/Fareground/agent-framework)
 
 ## Status
 
-**Early-stage — alpha (0.2.0).** The reference implementation is real and
-tested: the claim format, signing domain, trust model, governance verbs, and
-briefing assembly are implemented end to end, with 105 passing tests and
-byte-stable golden vectors in `spec/vectors.json`. That said, the wire format
-is not yet frozen, there is no published package or federation, and the design
-is still moving. Treat it as a working reference, not a stable dependency.
-Sections below describe only what actually runs today.
+**Early-stage — alpha.** The reference implementation is real and tested: the
+claim format, signing domain, trust model, governance verbs, and briefing
+assembly are implemented end to end, with byte-stable golden vectors in
+`spec/vectors.json`. That said, the wire format is not yet frozen, there is no
+federation, and the design is still moving. Treat it as a working reference,
+not a stable dependency. Sections below describe only what actually runs today.
 
 ## Concepts
 
@@ -77,19 +76,17 @@ Sections below describe only what actually runs today.
 
 ## Getting started
 
-Install from source (there is no published package yet):
-
 ```bash
-git clone https://github.com/Fareground/agent-knowledge.git
-cd agent-knowledge
-pip install "fg-agent-id @ git+https://github.com/Fareground/agent-id.git" -e ".[dev]"
+pip install fg-agent-knowledge
 ```
 
-The only runtime dependency is `fg-agent-id`; `sqlite3` is stdlib.
+The only runtime dependency is `fg-agent-id`; `sqlite3` is stdlib. To work
+from source instead, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Usage
 
-Two agents propose and review; a briefing serves the result with pedigree:
+Two agents propose and review; a briefing serves the result with pedigree
+(runnable as [`examples/quickstart.py`](examples/quickstart.py)):
 
 ```python
 from fg_agent_id import KeyPair
@@ -122,6 +119,34 @@ print(top.claim.body.statement, top.confidence, top.verify_first)
 > `fg-agent-knowledge/v1` — those are load-bearing protocol identifiers and are
 > intentionally left unchanged by the repository rename.
 
+### Keys across sessions
+
+Every verb signs as an identity, so an agent needs the *same* keypair from one
+session to the next — `KeyPair.generate()` on every run creates a brand-new
+author each time. `fg-agent-id` ships passphrase-sealed keyfile serialization
+(scrypt + ChaCha20-Poly1305); generate once, save to a keyfile, and load it on
+every subsequent session (runnable as
+[`examples/keyfile_reuse.py`](examples/keyfile_reuse.py)):
+
+```python
+from pathlib import Path
+from fg_agent_id import KeyPair
+
+keyfile = Path("scout.key")
+passphrase = "…from your secret manager, never hardcoded…"
+
+if keyfile.exists():
+    scout = KeyPair.from_encrypted_bytes(keyfile.read_bytes(), passphrase)
+else:
+    scout = KeyPair.generate()
+    keyfile.write_bytes(scout.to_encrypted_bytes(passphrase))
+
+# scout now signs as the same author in every session
+```
+
+Treat the keyfile like any private key: keep it out of version control and
+source the passphrase from your environment or a secret manager.
+
 **Two infra seams, bring your own.** A knowledge base is the fixed normative
 core (claim format + signing, the trust model, the verbs, governance) plus two
 pluggable adapters: a **Store** (persistence — SQLite/in-memory reference,
@@ -136,6 +161,24 @@ interoperate.
 No consolidation engine (an LLM consolidator is a *consumer* of this API), no
 transport (records are transport-agnostic signed JSON — carry them over AMP),
 no *built-in* embeddings, no federation (planned: signed export bundles).
+
+## Supported API
+
+Everything importable from `fg_agent_knowledge` works, but the surface has two
+tiers with different stability expectations:
+
+- **Facade tier — build against this.** `KnowledgeBase` and its verbs, the
+  record types (`Claim`, `Endorsement`, `Promotion`, `Retirement`, `Briefing`,
+  `Scope`, `Policy`, …), the error hierarchy (`KnowledgeError` and subclasses),
+  and the adapter protocols (`Store`, `Retriever`, plus the reference
+  `SQLiteStore`, `InMemoryStore`, `KeywordRetriever`). This is the intended
+  consumer surface; changes here are treated as breaking.
+- **Wire tier — for interoperating implementations.** The low-level signing
+  and encoding primitives (`sign_payload`, `signing_input`, `record_id`,
+  `verify_by_address`, `DOMAIN`, the `CONTEXT_*` constants) and the raw record
+  builders/verifiers. These track [`spec/SPEC.md`](spec/SPEC.md) exactly —
+  useful for writing an alternative implementation or debugging signatures,
+  but most applications never need them.
 
 ## Project structure
 
@@ -152,8 +195,8 @@ spec/
   SPEC.md                                   Normative wire format
   vectors.json                              Byte-stable golden vectors
   generate_vectors.py                       Regenerate vectors
-tests/                                      105 tests (unit + e2e + vectors)
-examples/                                   Consumer sketches (e.g. consolidator)
+tests/                                      Unit + e2e + golden-vector tests
+examples/                                   Runnable examples + consumer sketches
 ```
 
 ## Design

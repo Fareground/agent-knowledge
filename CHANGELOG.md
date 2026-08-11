@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.1 — 2026-08-11
+
+First PyPI release; packaging and documentation only — no wire-format or API
+changes.
+
+- Pin the runtime dependency to `fg-agent-id>=0.2,<0.3` (resolvable from PyPI).
+- Release workflow: build, tag/version check, clean-env wheel smoke test,
+  trusted publishing to PyPI.
+- Runnable examples (`examples/quickstart.py`, `examples/keyfile_reuse.py`),
+  exercised by the test suite so they cannot rot.
+- README: PyPI install instructions, key persistence across sessions
+  (passphrase-sealed keyfiles), and a "Supported API" section tiering the
+  facade surface vs the low-level wire primitives.
+- `SECURITY.md` with a private reporting channel.
+
 ## 0.2.0 — 2026-07-20
 
 Retrieval becomes a first-class, pluggable infra seam — alongside storage.
