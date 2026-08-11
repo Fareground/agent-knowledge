@@ -43,23 +43,52 @@ class KnowledgeBase:
     """Shared knowledge for one deployment: capture, propose, endorse,
     brief, invalidate — over any :class:`~fg_agent_knowledge.store.Store`."""
 
-    def __init__(self, store: Store, retriever: Retriever | None = None) -> None:
+    def __init__(
+        self,
+        store: Store,
+        retriever: Retriever | None = None,
+        *,
+        default_author: KeyPair | None = None,
+    ) -> None:
+        """``default_author`` is the identity this handle acts as: when set,
+        the signing verbs (``observe`` / ``propose`` / ``review`` /
+        ``endorse`` / ``retire``) may omit their keys argument. An explicit
+        keys argument always wins. The natural pattern is one handle per
+        acting agent; governance guards (self-review, author-only retire)
+        compare addresses at call time, so a default changes nothing about
+        what is allowed."""
         self._store = store
         self._retriever = retriever if retriever is not None else KeywordRetriever()
+        self._default_author = default_author
+
+    def _author(self, keys: KeyPair | None) -> KeyPair:
+        if keys is not None:
+            return keys
+        if self._default_author is None:
+            raise ValidationError(
+                "no author: pass keys explicitly or construct "
+                "KnowledgeBase(store, default_author=...)"
+            )
+        return self._default_author
 
     # -- capture ---------------------------------------------------------
 
     def observe(
         self,
         scope: Scope,
-        observer: KeyPair | str,
-        kind: EpisodeKind,
-        content: str,
+        observer: KeyPair | str | None = None,
+        kind: EpisodeKind | None = None,
+        content: str | None = None,
         refs: tuple[ArtifactRef, ...] = (),
         occurred_at: datetime | None = None,
     ) -> Episode:
         """Record a cheap, unsigned episode. No judgment at write time —
-        quality lives in promotion."""
+        quality lives in promotion. ``observer`` may be omitted when the
+        handle carries a ``default_author``."""
+        kind = _require("kind", kind)
+        content = _require("content", content)
+        if observer is None:
+            observer = self._author(None)
         episode = Episode(
             id=str(uuid.uuid4()),
             scope=scope,
@@ -77,9 +106,9 @@ class KnowledgeBase:
     def propose(
         self,
         scope: Scope,
-        keys: KeyPair,
-        kind: ClaimKind,
-        statement: str,
+        keys: KeyPair | None = None,
+        kind: ClaimKind | None = None,
+        statement: str | None = None,
         topics: tuple[str, ...] = (),
         refs: tuple[ArtifactRef, ...] = (),
         episodes: tuple[str, ...] = (),
@@ -88,7 +117,11 @@ class KnowledgeBase:
     ) -> Promotion:
         """Sign a claim and propose it into ``scope`` under the scope's
         policy. Proposing an identical body again is idempotent — same
-        claim_id, same promotion."""
+        claim_id, same promotion. ``keys`` may be omitted when the handle
+        carries a ``default_author``."""
+        keys = self._author(keys)
+        kind = _require("kind", kind)
+        statement = _require("statement", statement)
         self._check_episode_refs(scope, episodes)
         _reject_future("asserted_at", asserted_at)
         if supersedes is not None:
@@ -120,13 +153,16 @@ class KnowledgeBase:
     def review(
         self,
         promotion_id: str,
-        keys: KeyPair,
-        verdict: ReviewDecision,
+        keys: KeyPair | None = None,
+        verdict: ReviewDecision | None = None,
         basis: str = "",
     ) -> Promotion:
         """Cast a signed review verdict; the promotion decides itself when
         the policy's bar is met. Self-review and repeat reviewers are
-        protocol violations."""
+        protocol violations. ``keys`` may be omitted when the handle carries
+        a ``default_author`` (the self-review guard still applies)."""
+        keys = self._author(keys)
+        verdict = _require("verdict", verdict)
         promotion = self._store.promotion(promotion_id)
         if promotion is None:
             raise NotFoundError(f"unknown promotion: {promotion_id}")
@@ -161,14 +197,17 @@ class KnowledgeBase:
     def endorse(
         self,
         claim_id: str,
-        keys: KeyPair,
-        verdict: EndorsementVerdict,
+        keys: KeyPair | None = None,
+        verdict: EndorsementVerdict | None = None,
         basis: str = "",
         episodes: tuple[str, ...] = (),
         issued_at: datetime | None = None,
     ) -> Endorsement:
         """Corroborate or contradict a claim. A contradiction attaches to the
-        claim and lowers derived confidence — it never edits anything."""
+        claim and lowers derived confidence — it never edits anything.
+        ``keys`` may be omitted when the handle carries a ``default_author``."""
+        keys = self._author(keys)
+        verdict = _require("verdict", verdict)
         claim = self._require_claim(claim_id)
         self._check_episode_refs(claim.body.scope, episodes)
         _reject_future("issued_at", issued_at)
@@ -177,11 +216,16 @@ class KnowledgeBase:
         self._store.add_endorsement(endorsement)
         return endorsement
 
-    def retire(self, claim_id: str, keys: KeyPair, reason: str) -> Retirement:
+    def retire(
+        self, claim_id: str, keys: KeyPair | None = None, reason: str | None = None
+    ) -> Retirement:
         """The only way a claim leaves briefings for good. The record stays —
         nothing is silently deleted. Only the claim's author may retire it;
         moderated (owner/reviewer) retirement is a consumer governance flow
-        layered on top, never a raw capability of the shared library."""
+        layered on top, never a raw capability of the shared library.
+        ``keys`` may be omitted when the handle carries a ``default_author``."""
+        keys = self._author(keys)
+        reason = _require("reason", reason)
         claim = self._require_claim(claim_id)
         if claim.body.author != _address_of(keys):
             raise PolicyError("only a claim's author may retire it")
@@ -277,6 +321,15 @@ class KnowledgeBase:
                 raise ScopeError(
                     "episode references must not cross the space boundary"
                 )
+
+
+def _require(name: str, value):
+    """Runtime guard for parameters whose ``None`` default exists only so
+    ``keys`` can be omitted ahead of them (Python forbids a default-free
+    parameter after a defaulted one). They remain required."""
+    if value is None:
+        raise ValidationError(f"{name} is required")
+    return value
 
 
 def _address_of(who: KeyPair | str) -> str:

@@ -92,28 +92,35 @@ Two agents propose and review; a briefing serves the result with pedigree
 from fg_agent_id import KeyPair
 from fg_agent_knowledge import KnowledgeBase, Policy, Scope, SQLiteStore
 
-scout, analyst = KeyPair.generate(), KeyPair.generate()
-kb = KnowledgeBase(SQLiteStore("team.db"))
+store = SQLiteStore("team.db")
+# One handle per acting agent: default_author is who this handle signs as.
+scout = KnowledgeBase(store, default_author=KeyPair.generate())
+analyst = KnowledgeBase(store, default_author=KeyPair.generate())
 scope = Scope(space="workspace-42")
-kb.set_policy(scope, Policy(mode="review", required_approvals=1))
+scout.set_policy(scope, Policy(mode="review", required_approvals=1))
 
 # scout observes, distills, proposes
-ep = kb.observe(scope, scout, "observation", "deploy failed twice on cold cache")
-promo = kb.propose(
-    scope, scout, "procedural",
-    "warm the cache before deploying the pricing service",
+ep = scout.observe(scope, kind="observation", content="deploy failed twice on cold cache")
+promo = scout.propose(
+    scope, kind="procedural",
+    statement="warm the cache before deploying the pricing service",
     topics=("deploy", "pricing"), episodes=(ep.id,),
 )
 
 # analyst reviews — the proposer cannot approve their own promotion
-promo = kb.review(promo.id, analyst, "approve", basis="matches incident log")
+promo = analyst.review(promo.id, verdict="approve", basis="matches incident log")
 assert promo.status == "accepted"
 
 # anyone briefs before acting — assembled, attributed, never generated
-briefing = kb.brief(scope, task="deploy pricing service")
+briefing = analyst.brief(scope, task="deploy pricing service")
 top = briefing.items[0]
 print(top.claim.body.statement, top.confidence, top.verify_first)
 ```
+
+Every verb also takes explicit keys as its second argument
+(`kb.propose(scope, keys, "procedural", ...)`) — an explicit author always
+wins over the handle's `default_author`, and governance guards (self-review,
+author-only retire) compare identities at call time either way.
 
 > The import package is `fg_agent_knowledge` and the signing domain is
 > `fg-agent-knowledge/v1` — those are load-bearing protocol identifiers and are
@@ -123,23 +130,16 @@ print(top.claim.body.statement, top.confidence, top.verify_first)
 
 Every verb signs as an identity, so an agent needs the *same* keypair from one
 session to the next — `KeyPair.generate()` on every run creates a brand-new
-author each time. `fg-agent-id` ships passphrase-sealed keyfile serialization
-(scrypt + ChaCha20-Poly1305); generate once, save to a keyfile, and load it on
-every subsequent session (runnable as
+author each time. `fg-agent-id` ships this as a one-liner: the keyfile is
+created on first run and loaded back ever after, passphrase-sealed
+(scrypt + ChaCha20-Poly1305) when a passphrase is given (runnable as
 [`examples/keyfile_reuse.py`](examples/keyfile_reuse.py)):
 
 ```python
-from pathlib import Path
-from fg_agent_id import KeyPair
+from fg_agent_id import load_or_create_keys
 
-keyfile = Path("scout.key")
-passphrase = "…from your secret manager, never hardcoded…"
-
-if keyfile.exists():
-    scout = KeyPair.from_encrypted_bytes(keyfile.read_bytes(), passphrase)
-else:
-    scout = KeyPair.generate()
-    keyfile.write_bytes(scout.to_encrypted_bytes(passphrase))
+scout_keys = load_or_create_keys("scout.key", passphrase="…from your secret manager…")
+scout = KnowledgeBase(store, default_author=scout_keys)
 
 # scout now signs as the same author in every session
 ```

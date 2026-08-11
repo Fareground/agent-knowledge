@@ -2,9 +2,18 @@
 
 ## 0.2.1 — 2026-08-11
 
-First PyPI release; packaging and documentation only — no wire-format or API
-changes.
+First PyPI release; packaging, documentation, and one additive ergonomic API
+— no wire-format changes.
 
+- **`KnowledgeBase(store, default_author=keys)`** — the identity this handle
+  acts as. The signing verbs (`observe` / `propose` / `review` / `endorse` /
+  `retire`) may then omit their keys argument; an explicit keys argument
+  always wins, and governance guards (self-review, author-only retire) are
+  unchanged since they compare identities at call time. Fully backward
+  compatible — existing explicit-keys calls work as before.
+- README/examples: credential setup now uses fg-agent-id's
+  `load_or_create_keys` one-liner instead of hand-rolling the keyfile
+  load-or-generate pattern.
 - Pin the runtime dependency to `fg-agent-id>=0.2,<0.3` (resolvable from PyPI).
 - Release workflow: build, tag/version check, clean-env wheel smoke test,
   trusted publishing to PyPI.
