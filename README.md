@@ -15,7 +15,7 @@
 <p align="center">
   <a href="https://github.com/Fareground/agent-knowledge/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Fareground/agent-knowledge/ci.yml?branch=main&style=flat-square&label=CI" /></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11+-3b82f6?style=flat-square" />
-  <img alt="Status" src="https://img.shields.io/badge/status-alpha-f59e0b?style=flat-square" />
+  <a href="https://pypi.org/project/fg-agent-knowledge/"><img alt="PyPI" src="https://img.shields.io/pypi/v/fg-agent-knowledge?style=flat-square" /></a>
 </p>
 
 ---
