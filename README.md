@@ -16,6 +16,7 @@
   <a href="https://github.com/Fareground/agent-knowledge/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/Fareground/agent-knowledge/ci.yml?branch=main&style=flat-square&label=CI" /></a>
   <img alt="Python" src="https://img.shields.io/badge/python-3.11+-3b82f6?style=flat-square" />
   <a href="https://pypi.org/project/fg-agent-knowledge/"><img alt="PyPI" src="https://img.shields.io/pypi/v/fg-agent-knowledge?style=flat-square" /></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-lightgrey?style=flat-square" /></a>
 </p>
 
 ---
@@ -29,12 +30,19 @@ pedigree**, governed by explicit promotion — and deliberately does NOT
 standardize storage engines, ranking algorithms, or consolidation
 intelligence. Those compete; the format and protocols standardize.
 
+Use this package for facts a group can inspect, challenge, approve, and reuse.
+Use [`agent-memory`](https://github.com/Fareground/agent-memory) for one agent's
+private experience across sessions. Knowledge is promoted, attributed team
+state; memory is an individual agent's retained context. This package does not
+call an LLM or decide what is true for you—it enforces the claim, provenance,
+review, contradiction, and retirement lifecycle.
+
 It sits in Fareground's family of open agent building blocks:
 [`agent-id`](https://github.com/Fareground/agent-id) (who an agent is)
 → [`agent-messaging`](https://github.com/Fareground/agent-messaging)
 (how agents talk) → [`agent-memory`](https://github.com/Fareground/agent-memory)
 (what one agent remembers) → **`agent-knowledge`** (what a group of agents
-knows) → [`agent-framework`](https://github.com/Fareground/agent-framework)
+knows) → [`Agents SDK`](https://github.com/Fareground/agents-sdk)
 (the runtime that ties them together).
 
 ## Status
@@ -226,6 +234,11 @@ The normative wire format and data model live in
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, tests, and conventions.
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE) for the full terms. Report
+vulnerabilities through [SECURITY.md](SECURITY.md), not a public issue.
 
 ---
 

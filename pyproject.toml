@@ -23,6 +23,13 @@ dependencies = [
     "fg-agent-id>=0.2,<0.3",
 ]
 
+[project.urls]
+Homepage = "https://github.com/Fareground/agent-knowledge"
+Repository = "https://github.com/Fareground/agent-knowledge"
+Documentation = "https://github.com/Fareground/agent-knowledge/blob/main/README.md"
+Changelog = "https://github.com/Fareground/agent-knowledge/blob/main/CHANGELOG.md"
+Issues = "https://github.com/Fareground/agent-knowledge/issues"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
